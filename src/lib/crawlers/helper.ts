@@ -51,8 +51,8 @@ export async function crawlGeneric(siteName: string, url: string, encoding = 'ut
       }
     }
 
-    // 10만원권, 10만, 10 만원권 등 매칭
-    if (text.includes('10만') && !text.includes('증정') && !text.includes('제화')) {
+    // 10만원권, 10만, 10 만원권, 50/10/5만원 등 매칭
+    if ((text.includes('10만') || text.includes('/10/')) && !text.includes('증정') && !text.includes('제화')) {
       let type: import('../types').PriceInfo['giftCardType'] | null = null;
       if (text.includes('신세계')) type = 'shinsegae';
       else if (text.includes('현대')) type = 'hyundai';
@@ -99,6 +99,50 @@ export async function crawlGeneric(siteName: string, url: string, encoding = 'ut
                  buyPrice,
                  buyRate
               });
+           }
+        }
+      }
+    }
+  });
+
+  // h4와 ul.ul-sell 패턴 추가 매칭 (마이페이의 현대상품권 등 tr 테이블에서 누락된 항목 보완)
+  $('h4').each((_, el) => {
+    const text = $(el).text().trim();
+    if ((text.includes('10만') || text.includes('/10/')) && !text.includes('증정') && !text.includes('제화')) {
+      let type: import('../types').PriceInfo['giftCardType'] | null = null;
+      if (text.includes('신세계')) type = 'shinsegae';
+      else if (text.includes('현대')) type = 'hyundai';
+      else if (text.includes('롯데')) type = 'lotte';
+
+      if (type && !prices.find(p => p.giftCardType === type)) {
+        const container = $(el).parent();
+        const ul = container.find('ul.ul-sell');
+        if (ul.length > 0) {
+           let minPrice = Infinity;
+           let minRate = 0;
+           ul.find('li').each((_, li) => {
+               const priceAttr = $(li).attr('data-price');
+               const rateAttr = $(li).attr('data-rate');
+               if (priceAttr) {
+                   const parsedPrice = parseInt(priceAttr.replace(/,/g, ''), 10);
+                   const parsedRate = rateAttr ? parseFloat(rateAttr) : 0;
+                   if (parsedPrice > 10000 && parsedPrice < minPrice) {
+                       minPrice = parsedPrice;
+                       minRate = parsedRate;
+                   }
+               }
+           });
+           
+           if (minPrice !== Infinity) {
+               if (minRate === 0) {
+                   minRate = Math.round(((100000 - minPrice) / 100000) * 100 * 100) / 100;
+               }
+               prices.push({
+                   giftCardType: type,
+                   denomination: 100000,
+                   buyPrice: minPrice,
+                   buyRate: minRate
+               });
            }
         }
       }
