@@ -63,6 +63,15 @@ export default function Home() {
   // 렌더링용 사이트 목록 추출
   const siteNames = Array.from(new Set(prices.map(p => p.site_name)));
 
+  // 각 사이트별로 전체 상품권 중 베스트 가격을 몇 개나 가지고 있는지 카운트
+  const siteBestCount: Record<string, number> = {};
+  prices.forEach(p => {
+    const type = p.gift_card_type as keyof typeof bestPrices;
+    if (p.buy_price === bestPrices[type]) {
+      siteBestCount[p.site_name] = (siteBestCount[p.site_name] || 0) + 1;
+    }
+  });
+
   // 사이트별 데이터를 맵으로 구성
   const siteDataMap: Record<string, Record<string, PriceData>> = {};
   siteNames.forEach(site => {
@@ -85,7 +94,15 @@ export default function Home() {
           const typePrices = prices.filter(p => p.gift_card_type === type);
           if (typePrices.length === 0) return null;
           
-          const best = typePrices.reduce((prev, curr) => (prev.buy_price > curr.buy_price) ? prev : curr);
+          const best = typePrices.reduce((prev, curr) => {
+            if (curr.buy_price > prev.buy_price) return curr;
+            if (curr.buy_price === prev.buy_price) {
+              const prevCount = siteBestCount[prev.site_name] || 0;
+              const currCount = siteBestCount[curr.site_name] || 0;
+              return currCount > prevCount ? curr : prev;
+            }
+            return prev;
+          });
 
           return (
             <div className="card" key={type}>
