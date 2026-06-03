@@ -61,7 +61,7 @@ export default function Home() {
   };
 
   // 렌더링용 사이트 목록 추출
-  const siteNames = Array.from(new Set(prices.map(p => p.site_name)));
+  let siteNames = Array.from(new Set(prices.map(p => p.site_name)));
 
   // 각 사이트별로 전체 상품권 중 베스트 가격을 몇 개나 가지고 있는지 카운트
   const siteBestCount: Record<string, number> = {};
@@ -70,6 +70,16 @@ export default function Home() {
     if (p.buy_price === bestPrices[type]) {
       siteBestCount[p.site_name] = (siteBestCount[p.site_name] || 0) + 1;
     }
+  });
+
+  // 사이트 목록 정렬 (베스트 가격 보유 개수 내림차순 -> 이름 가나다순)
+  siteNames.sort((a, b) => {
+    const countA = siteBestCount[a] || 0;
+    const countB = siteBestCount[b] || 0;
+    if (countB !== countA) {
+      return countB - countA; // 베스트 카운트가 높은 순 (3 -> 2 -> 1)
+    }
+    return a.localeCompare(b, 'ko-KR'); // 같을 경우 이름 가나다순
   });
 
   // 사이트별 데이터를 맵으로 구성
