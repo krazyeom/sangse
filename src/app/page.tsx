@@ -170,7 +170,7 @@ export default function Home() {
       <footer>
         <p>
           made by <a href="https://github.com/krazyeom" target="_blank" rel="noreferrer">krazyeom</a><br />
-          그래염 @ LTC <a href="https://cafe.naver.com/hexenyang" target="_blank" rel="noreferrer">https://cafe.naver.com/hexenyang</a>
+          그래염 @ <a href="https://cafe.naver.com/hexenyang" target="_blank" rel="noreferrer">LTC</a>
         </p>
       </footer>
     </div>
