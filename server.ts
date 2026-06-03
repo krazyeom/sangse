@@ -1,7 +1,6 @@
 import { createServer } from 'http';
 import { parse } from 'url';
 import next from 'next';
-import { startScheduler } from './src/lib/scheduler';
 
 const dev = process.env.NODE_ENV !== 'production';
 const hostname = 'localhost';
@@ -27,7 +26,5 @@ app.prepare().then(() => {
     })
     .listen(port, () => {
       console.log(`> Ready on http://${hostname}:${port}`);
-      // 서버가 성공적으로 시작된 후 스케줄러를 시작
-      startScheduler();
     });
 });

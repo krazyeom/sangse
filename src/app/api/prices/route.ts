@@ -3,19 +3,23 @@ import db from '@/lib/db';
 
 export async function GET() {
   try {
-    const stmt = db.prepare('SELECT * FROM prices ORDER BY gift_card_type, buy_price DESC');
-    const prices = stmt.all();
+    const { data: prices, error } = await db.from('prices')
+      .select('*')
+      .order('gift_card_type', { ascending: true })
+      .order('buy_price', { ascending: false });
+
+    if (error) throw error;
 
     // 마지막 크롤링 시간 찾기
     let lastCrawledAt = null;
-    if (prices.length > 0) {
-      lastCrawledAt = (prices[0] as any).crawled_at;
+    if (prices && prices.length > 0) {
+      lastCrawledAt = prices[0].crawled_at;
     }
 
     return NextResponse.json({
       success: true,
       lastCrawledAt,
-      prices
+      prices: prices || []
     });
   } catch (error) {
     console.error('Failed to fetch prices API:', error);

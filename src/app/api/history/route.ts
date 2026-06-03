@@ -7,18 +7,17 @@ export async function GET(request: Request) {
     const type = searchParams.get('type') || 'shinsegae';
     const days = parseInt(searchParams.get('days') || '30', 10);
 
-    const stmt = db.prepare(`
-      SELECT * FROM price_history 
-      WHERE gift_card_type = ? 
-      ORDER BY date ASC
-      LIMIT ?
-    `);
-    
-    const history = stmt.all(type, days);
+    const { data: history, error } = await db.from('price_history')
+      .select('*')
+      .eq('gift_card_type', type)
+      .order('date', { ascending: true })
+      .limit(days);
+
+    if (error) throw error;
 
     return NextResponse.json({
       success: true,
-      history
+      history: history || []
     });
   } catch (error) {
     console.error('Failed to fetch history API:', error);

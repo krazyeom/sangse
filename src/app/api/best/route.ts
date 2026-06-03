@@ -6,21 +6,15 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
 
-    let query = 'SELECT * FROM prices';
-    let params: any[] = [];
-
+    let query = db.from('prices').select('*');
     if (type) {
-      query += ' WHERE gift_card_type = ?';
-      params.push(type);
+      query = query.eq('gift_card_type', type);
     }
-    
-    // 가장 매입가가 높은(할인율이 낮은) 순으로 정렬
-    query += ' ORDER BY buy_price DESC';
+    const { data: prices, error } = await query.order('buy_price', { ascending: false });
 
-    const stmt = db.prepare(query);
-    const prices = stmt.all(...params) as any[];
+    if (error) throw error;
 
-    if (prices.length === 0) {
+    if (!prices || prices.length === 0) {
       return NextResponse.json({ success: true, best: null, allPrices: [] });
     }
 

@@ -1,0 +1,61 @@
+import { NextResponse } from 'next/server';
+import { crawlAll } from '@/lib/crawlers';
+import db from '@/lib/db';
+
+export const dynamic = 'force-dynamic'; // 항상 동적으로 실행되도록 (캐시 방지)
+
+export async function GET(request: Request) {
+  try {
+    // 1. 보안 체크 (Vercel Cron 또는 수동 호출 시 인증)
+    // 로컬 환경이나 CRON_SECRET이 정의되지 않은 경우 통과 허용, 프로덕션에서는 필수
+    const authHeader = request.headers.get('authorization');
+    const cronSecret = process.env.CRON_SECRET;
+    
+    if (process.env.NODE_ENV === 'production' && cronSecret) {
+      if (authHeader !== `Bearer ${cronSecret}`) {
+        return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+      }
+    }
+
+    console.log('[Cron] Starting to crawl prices...');
+    const results = await crawlAll();
+
+    // Insert용 배열 구성
+    const rowsToInsert: any[] = [];
+    for (const res of results) {
+      for (const p of res.prices) {
+        rowsToInsert.push({
+          site_name: res.siteName,
+          site_url: res.siteUrl,
+          gift_card_type: p.giftCardType,
+          denomination: p.denomination,
+          buy_price: p.buyPrice,
+          buy_rate: p.buyRate,
+          crawled_at: res.timestamp.toISOString()
+        });
+      }
+    }
+
+    if (rowsToInsert.length > 0) {
+      // 2. 과거 데이터 삭제 (id >= 0 조건을 주어 전체 삭제)
+      const { error: deleteError } = await db.from('prices').delete().gte('id', 0);
+      if (deleteError) {
+        console.error('[Cron] Failed to clear old prices:', deleteError);
+        throw deleteError;
+      }
+
+      // 3. 최신 데이터 삽입
+      const { error: insertError } = await db.from('prices').insert(rowsToInsert);
+      if (insertError) {
+        console.error('[Cron] Failed to insert new prices:', insertError);
+        throw insertError;
+      }
+    }
+
+    console.log(`[Cron] Successfully updated prices from ${results.length} sites.`);
+    return NextResponse.json({ success: true, count: rowsToInsert.length });
+  } catch (error) {
+    console.error('[Cron] Failed to update DB:', error);
+    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+  }
+}
