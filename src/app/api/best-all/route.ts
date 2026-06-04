@@ -10,7 +10,10 @@ export async function GET() {
     if (error) throw error;
 
     if (!prices || prices.length === 0) {
-      return NextResponse.json({ success: true, data: {} });
+      return NextResponse.json(
+        { success: true, data: {} },
+        { headers: { 'Access-Control-Allow-Origin': '*' } }
+      );
     }
 
     const types = ['shinsegae', 'lotte', 'hyundai'];
@@ -33,12 +36,15 @@ export async function GET() {
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      data: bestPrices
-    });
+    return NextResponse.json(
+      { success: true, data: bestPrices },
+      { headers: { 'Access-Control-Allow-Origin': '*' } }
+    );
   } catch (error) {
     console.error('Failed to fetch best-all API:', error);
-    return NextResponse.json({ success: false, error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Internal Server Error' },
+      { status: 500, headers: { 'Access-Control-Allow-Origin': '*' } }
+    );
   }
 }
