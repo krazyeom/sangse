@@ -2,28 +2,25 @@ import Tesseract from 'tesseract.js';
 import { CrawlResult, PriceInfo } from '../types';
 
 function extractRate(line: string): number | null {
-  const match = line.match(/\[?([0-9]{2,3})[^0-9]+([0-9]{2,3})[^0-9]*%/);
-  if (match) {
-     const num1 = parseInt(match[1]);
-     const num2 = parseInt(match[2]);
-     if (num1 >= 20 && num1 <= 500 && num2 >= 20 && num2 <= 500) {
-         return num1 >= 100 ? num1 / 100 : num1 / 10;
-     }
-  }
   const pctIndex = line.indexOf('%');
-  if (pctIndex !== -1) {
-      const str = line.substring(Math.max(0, pctIndex - 15), pctIndex);
-      const lastBlockMatch = str.match(/([0-9]{2,3}[^0-9]+[0-9]{2,3})[^0-9]*$/);
-      if (lastBlockMatch) {
-          const digits = lastBlockMatch[1].replace(/[^0-9]/g, '');
-          for (let len = 3; len >= 2; len--) {
-              const r1 = digits.substring(0, len);
-              const r2 = digits.substring(len + 1, len + 1 + len);
-              const num1 = parseInt(r1);
-              const num2 = parseInt(r2);
-              if (num1 >= 20 && num1 <= 500 && num2 >= 20 && num2 <= 500) {
-                 return len === 2 ? num1 / 10 : num1 / 100;
-              }
+  if (pctIndex === -1) return null;
+
+  const strBeforePct = line.substring(Math.max(0, pctIndex - 20), pctIndex);
+  const match = strBeforePct.match(/([0-9]+)$/);
+  if (!match) return null;
+  
+  const digits = match[1];
+  
+  for (let len = 3; len >= 2; len--) {
+      for (let start = 0; start <= digits.length - (len * 2 + 1); start++) {
+          const r1 = digits.substring(start, start + len);
+          const r2 = digits.substring(start + len + 1, start + len + 1 + len);
+          
+          const num1 = parseInt(r1, 10);
+          const num2 = parseInt(r2, 10);
+          
+          if (num1 >= 20 && num1 <= 500 && num2 >= 20 && num2 <= 500) {
+              return len === 2 ? num1 / 10 : num1 / 100;
           }
       }
   }
