@@ -14,13 +14,40 @@ export async function GET() {
     }
 
     const types = ['shinsegae', 'lotte', 'hyundai'];
+    
+    // 1. Find absolute maximum prices for each type
+    const absoluteMaxPrices: Record<string, number> = {};
+    for (const type of types) {
+      const typePrices = prices.filter(p => p.gift_card_type === type);
+      if (typePrices.length > 0) {
+        absoluteMaxPrices[type] = Math.max(...typePrices.map(p => p.buy_price));
+      }
+    }
+
+    // 2. Count how many times each site has an absolute max price
+    const siteBestCount: Record<string, number> = {};
+    prices.forEach(p => {
+      const type = p.gift_card_type;
+      if (p.buy_price === absoluteMaxPrices[type]) {
+        siteBestCount[p.site_name] = (siteBestCount[p.site_name] || 0) + 1;
+      }
+    });
+
     const bestPrices: Record<string, any> = {};
 
     for (const type of types) {
       const typePrices = prices.filter(p => p.gift_card_type === type);
       if (typePrices.length > 0) {
-        // Sort descending by buy_price
-        typePrices.sort((a, b) => b.buy_price - a.buy_price);
+        // Sort descending by buy_price, then descending by siteBestCount
+        typePrices.sort((a, b) => {
+          if (b.buy_price !== a.buy_price) {
+            return b.buy_price - a.buy_price;
+          }
+          const countA = siteBestCount[a.site_name] || 0;
+          const countB = siteBestCount[b.site_name] || 0;
+          return countB - countA;
+        });
+        
         const best = typePrices[0];
         bestPrices[type] = {
           siteName: best.site_name,

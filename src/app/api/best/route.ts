@@ -8,17 +8,44 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
 
-    let query = db.from('prices').select('*');
-    if (type) {
-      query = query.eq('gift_card_type', type);
-    }
-    const { data: prices, error } = await query.order('buy_price', { ascending: false });
+    // Fetch ALL prices to calculate global tie-breakers
+    const { data: allPrices, error } = await db.from('prices').select('*');
 
     if (error) throw error;
 
-    if (!prices || prices.length === 0) {
+    if (!allPrices || allPrices.length === 0) {
       return NextResponse.json({ success: true, best: null, allPrices: [] });
     }
+
+    const types = ['shinsegae', 'lotte', 'hyundai'];
+    const absoluteMaxPrices: Record<string, number> = {};
+    for (const t of types) {
+      const typePrices = allPrices.filter(p => p.gift_card_type === t);
+      if (typePrices.length > 0) {
+        absoluteMaxPrices[t] = Math.max(...typePrices.map(p => p.buy_price));
+      }
+    }
+
+    const siteBestCount: Record<string, number> = {};
+    allPrices.forEach(p => {
+      const t = p.gift_card_type;
+      if (p.buy_price === absoluteMaxPrices[t]) {
+        siteBestCount[p.site_name] = (siteBestCount[p.site_name] || 0) + 1;
+      }
+    });
+
+    // Filter by requested type if provided
+    let prices = type ? allPrices.filter(p => p.gift_card_type === type) : [...allPrices];
+
+    // Sort by buy_price descending, then by siteBestCount descending
+    prices.sort((a, b) => {
+      if (b.buy_price !== a.buy_price) {
+        return b.buy_price - a.buy_price;
+      }
+      const countA = siteBestCount[a.site_name] || 0;
+      const countB = siteBestCount[b.site_name] || 0;
+      return countB - countA;
+    });
 
     const bestPrice = prices[0];
 
