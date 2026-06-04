@@ -23,6 +23,7 @@ export async function crawlAll(): Promise<CrawlResult[]> {
     { name: '중앙상품권', fn: () => crawlGeneric('https://centralgift.imweb.me/', '중앙상품권') },
     { name: '회현상품권', fn: () => crawlGeneric('https://www.hhvip.co.kr/', '회현상품권') },
     { name: '고고상품권', fn: crawlGogoExchange },
+    { name: '명동상품권', fn: () => crawlGeneric('https://ticketno1.co.kr/popup/popup_6.html?idx=6&type=W&__popupPage=T', '명동상품권') },
   ];
 
   for (const site of sites) {

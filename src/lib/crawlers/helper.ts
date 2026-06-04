@@ -76,32 +76,59 @@ export async function crawlGeneric(
       }
 
       // 10만원권, 10만, 10 만원권, 50/10/5만원 등 매칭 (또는 강제 패스 옵션)
-      const hasTenK = text.includes('10만') || text.includes('/10/') || options.bypassTenKCheck;
+      const normalizedText = text.replace(/\s+/g, '');
+      const hasTenK = normalizedText.includes('10만') || normalizedText.includes('/10/') || options.bypassTenKCheck;
       
-      if (hasTenK && !text.includes('증정') && !text.includes('제화')) {
+      if (hasTenK && !normalizedText.includes('증정') && !normalizedText.includes('제화')) {
         let type: import('../types').PriceInfo['giftCardType'] | null = null;
-        if (text.includes('신세계')) type = 'shinsegae';
-        else if (text.includes('현대')) type = 'hyundai';
-        else if (text.includes('롯데')) type = 'lotte';
+        if (normalizedText.includes('신세계')) type = 'shinsegae';
+        else if (normalizedText.includes('현대')) type = 'hyundai';
+        else if (normalizedText.includes('롯데')) type = 'lotte';
 
         if (type) {
           // 텍스트에서 찾기
           if (buyPrice === 0) {
-             let minPrice = Infinity;
-             let minRate = 0;
+             let bestPrice = Infinity;
+             let bestRate = 0;
+             let foundIche = false;
+             
              $(el).find('td').each((_, td) => {
-                 const parsed = parsePriceText($(td).text());
-                 // 매입가와 판매가가 둘 다 있을 경우, 상점이 사들이는 매입가(더 낮은 가격)를 선택
-                 if (parsed && parsed.price > 10000) {
-                     if (parsed.price < minPrice) {
-                         minPrice = parsed.price;
-                         minRate = parsed.rate;
+                 const tdText = $(td).text();
+                 const matches = Array.from(tdText.matchAll(/([\d,]+)\s*원?\s*\(([\d.]+)%\)\s*(이체|현금)?/g));
+                 
+                 if (matches.length > 0) {
+                     for (const match of matches) {
+                         const price = parseInt(match[1].replace(/,/g, ''), 10);
+                         const rate = parseFloat(match[2]);
+                         const kind = match[3];
+                         
+                         if (price > 10000) {
+                             if (kind === '이체') {
+                                 if (!foundIche || price < bestPrice) {
+                                     bestPrice = price;
+                                     bestRate = rate;
+                                     foundIche = true;
+                                 }
+                             } else if (!foundIche && price < bestPrice) {
+                                 bestPrice = price;
+                                 bestRate = rate;
+                             }
+                         }
+                     }
+                 } else {
+                     const parsed = parsePriceText(tdText);
+                     if (parsed && parsed.price > 10000 && !foundIche) {
+                         if (parsed.price < bestPrice) {
+                             bestPrice = parsed.price;
+                             bestRate = parsed.rate;
+                         }
                      }
                  }
              });
-             if (minPrice !== Infinity) {
-                 buyPrice = minPrice;
-                 buyRate = minRate;
+             
+             if (bestPrice !== Infinity) {
+                 buyPrice = bestPrice;
+                 buyRate = bestRate;
              }
           }
 
@@ -122,40 +149,56 @@ export async function crawlGeneric(
     // h4와 ul.ul-sell 패턴 추가 매칭 (마이페이의 현대상품권 등 tr 테이블에서 누락된 항목 보완)
     $('h4').each((_, el) => {
       const text = $(el).text().trim();
-      if ((text.includes('10만') || text.includes('/10/')) && !text.includes('증정') && !text.includes('제화')) {
+      const normalizedText = text.replace(/\s+/g, '');
+      if ((normalizedText.includes('10만') || normalizedText.includes('/10/')) && !normalizedText.includes('증정') && !normalizedText.includes('제화')) {
         let type: import('../types').PriceInfo['giftCardType'] | null = null;
-        if (text.includes('신세계')) type = 'shinsegae';
-        else if (text.includes('현대')) type = 'hyundai';
-        else if (text.includes('롯데')) type = 'lotte';
+        if (normalizedText.includes('신세계')) type = 'shinsegae';
+        else if (normalizedText.includes('현대')) type = 'hyundai';
+        else if (normalizedText.includes('롯데')) type = 'lotte';
 
         if (type && !prices.find(p => p.giftCardType === type)) {
           const container = $(el).parent();
           const ul = container.find('ul.ul-sell');
           if (ul.length > 0) {
-             let minPrice = Infinity;
-             let minRate = 0;
+             let bestPrice = Infinity;
+             let bestRate = 0;
+             let foundRemittance = false;
+             
              ul.find('li').each((_, li) => {
                  const priceAttr = $(li).attr('data-price');
                  const rateAttr = $(li).attr('data-rate');
+                 const methodAttr = $(li).attr('data-method');
+                 const liText = $(li).text();
+                 
                  if (priceAttr) {
                      const parsedPrice = parseInt(priceAttr.replace(/,/g, ''), 10);
                      const parsedRate = rateAttr ? parseFloat(rateAttr) : 0;
-                     if (parsedPrice > 10000 && parsedPrice < minPrice) {
-                         minPrice = parsedPrice;
-                         minRate = parsedRate;
+                     const isIche = methodAttr === 'remittance' || methodAttr === 'transfer' || liText.includes('이체');
+                     
+                     if (parsedPrice > 10000) {
+                         if (isIche) {
+                             if (!foundRemittance || parsedPrice < bestPrice) {
+                                 bestPrice = parsedPrice;
+                                 bestRate = parsedRate;
+                                 foundRemittance = true;
+                             }
+                         } else if (!foundRemittance && parsedPrice < bestPrice) {
+                             bestPrice = parsedPrice;
+                             bestRate = parsedRate;
+                         }
                      }
                  }
              });
              
-             if (minPrice !== Infinity) {
-                 if (minRate === 0) {
-                     minRate = Math.round(((100000 - minPrice) / 100000) * 100 * 100) / 100;
+             if (bestPrice !== Infinity) {
+                 if (bestRate === 0) {
+                     bestRate = Math.round(((100000 - bestPrice) / 100000) * 100 * 100) / 100;
                  }
                  prices.push({
                      giftCardType: type,
                      denomination: 100000,
-                     buyPrice: minPrice,
-                     buyRate: minRate
+                     buyPrice: bestPrice,
+                     buyRate: bestRate
                  });
              }
           }
