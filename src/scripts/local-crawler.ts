@@ -42,7 +42,10 @@ async function main() {
         throw insertError;
       }
       
-      const today = new Date().toISOString().split('T')[0];
+      // Get today's date in KST (UTC+9)
+      const now = new Date();
+      const kstTime = now.getTime() + (9 * 60 * 60 * 1000);
+      const today = new Date(kstTime).toISOString().split('T')[0];
       const types = ['shinsegae', 'lotte', 'hyundai'];
       for (const type of types) {
         const { data: bestPrices } = await db.from('prices')
