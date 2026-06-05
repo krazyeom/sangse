@@ -31,7 +31,7 @@ export async function crawlCitypay(): Promise<CrawlResult> {
         let bestRate = 0;
         let foundIche = false;
         
-        const extractFromTd = (el: cheerio.Cheerio) => {
+        const extractFromTd = (el: cheerio.Cheerio<any>) => {
             const tdText = el.text();
             const matches = Array.from(tdText.matchAll(/([\d,]+)\s*원?\s*\(([\d.]+)\s*%\)\s*(이체|현금)?/g));
             if (matches.length > 0) {
