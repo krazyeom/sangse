@@ -33,35 +33,39 @@ export async function crawlKnct(): Promise<CrawlResult> {
 
   try {
     const worker = await Tesseract.createWorker('kor');
-    await worker.setParameters({ tessedit_pageseg_mode: Tesseract.PSM.SINGLE_COLUMN });
-    const { data: { text } } = await worker.recognize('http://knct.shop/price/price.jpg');
+    await worker.setParameters({ tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK });
     
-    const lines = text.split('\n');
+    const imageUrl = 'http://knct.shop/price/price.jpg';
     
-    for (const line of lines) {
-      const isHyundai = line.includes('현대');
-      const isShinsegae = line.includes('신세계');
-      const isLotte = line.includes('롯데');
+    const regions = [
+      { type: 'hyundai', rect: { left: 593, top: 110, width: 196, height: 72 } },
+      { type: 'shinsegae', rect: { left: 593, top: 340, width: 196, height: 72 } },
+      { type: 'lotte', rect: { left: 593, top: 458, width: 196, height: 72 } }
+    ];
+
+    for (const region of regions) {
+      const { data } = await worker.recognize(imageUrl, { rectangle: region.rect });
+      const rawText = data.text;
       
-      if (!isHyundai && !isShinsegae && !isLotte) continue;
-      
-      const type = isHyundai ? 'hyundai' : isShinsegae ? 'shinsegae' : 'lotte';
-      
-      const rate = extractRate(line);
-      if (rate) {
-          const buyPrice = 100000 - (100000 * (rate / 100));
-          
-          // Check if we already have this type (in case OCR duplicates lines)
-          if (!prices.find(p => p.giftCardType === type)) {
-              prices.push({
-                  giftCardType: type,
-                  denomination: 100000,
-                  buyPrice,
-                  buyRate: rate
-              });
-          }
+      const cleaned = rawText.replace(/[^\d]/g, '');
+      if (cleaned.length >= 5) {
+        // Extract the first 5 digits representing the price (e.g. 96600)
+        const buyPrice = parseInt(cleaned.substring(0, 5), 10);
+        
+        if (buyPrice > 10000 && buyPrice <= 100000) {
+          const buyRate = Math.round(((100000 - buyPrice) / 100000) * 100 * 100) / 100;
+          prices.push({
+            giftCardType: region.type as 'hyundai' | 'shinsegae' | 'lotte',
+            denomination: 100000,
+            buyPrice,
+            buyRate
+          });
+        }
+      } else {
+        console.warn(`[knct] Failed to extract price for ${region.type}. Raw text: ${rawText}`);
       }
     }
+    
     await worker.terminate();
   } catch (error) {
     console.error('Error in crawlKnct (OCR):', error);
