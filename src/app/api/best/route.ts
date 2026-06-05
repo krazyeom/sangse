@@ -8,8 +8,8 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
 
-    // Fetch ALL prices to calculate global tie-breakers
-    const { data: allPrices, error } = await db.from('prices').select('*');
+    // Fetch ALL prices to calculate global tie-breakers (exclude 맥스솔루션 from best)
+    const { data: allPrices, error } = await db.from('prices').select('*').neq('site_name', '맥스솔루션');
 
     if (error) throw error;
 

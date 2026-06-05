@@ -23,7 +23,7 @@ export async function fetchHtml(url: string, encoding: string = 'utf-8') {
 
 export function parsePriceText(text: string): { price: number, rate: number } | null {
   // 예: "96,500원 (3.5%)" 또는 "96,500원(3.5%)" 또는 "96,900 원 (3.1%)"
-  const match = text.match(/([\d,]+)\s*원?\s*\(([\d.]+)%\)/);
+  const match = text.match(/([\d,]+)\s*원?\s*\(([\d.]+)\s*%\)/);
   if (match) {
     return {
       price: parseInt(match[1].replace(/,/g, ''), 10),
@@ -94,7 +94,7 @@ export async function crawlGeneric(
              
              $(el).find('td').each((_, td) => {
                  const tdText = $(td).text();
-                 const matches = Array.from(tdText.matchAll(/([\d,]+)\s*원?\s*\(([\d.]+)%\)\s*(이체|현금)?/g));
+                 const matches = Array.from(tdText.matchAll(/([\d,]+)\s*원?\s*\(([\d.]+)\s*%\)\s*(이체|현금)?/g));
                  
                  if (matches.length > 0) {
                      for (const match of matches) {

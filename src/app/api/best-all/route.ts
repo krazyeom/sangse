@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const { data: prices, error } = await db.from('prices').select('*');
+    const { data: prices, error } = await db.from('prices').select('*').neq('site_name', '맥스솔루션');
 
     if (error) throw error;
 

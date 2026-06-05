@@ -9,6 +9,11 @@ import { crawlKnct } from './knct';
 import { crawlCitypay } from './citypay';
 import { crawlVipticket } from './vipticket';
 
+import { crawlDream } from './dream';
+import { crawlWoorigift } from './woorigift';
+import { crawlTicketstore } from './ticketstore';
+import { crawlBestgift } from './bestgift';
+
 export async function crawlAll(): Promise<CrawlResult[]> {
   const results: CrawlResult[] = [];
 
@@ -30,6 +35,10 @@ export async function crawlAll(): Promise<CrawlResult[]> {
     { name: '도전상품권', fn: crawlKnct },
     { name: '씨티상품권', fn: crawlCitypay },
     { name: 'VIP상품권', fn: crawlVipticket },
+    { name: '드림상품권', fn: crawlDream },
+    { name: '행복상품권', fn: crawlWoorigift },
+    { name: '맥스솔루션', fn: crawlTicketstore },
+    { name: '베스트상품권', fn: crawlBestgift },
   ];
 
   for (const site of sites) {
