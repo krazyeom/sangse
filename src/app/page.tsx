@@ -53,11 +53,11 @@ export default function Home() {
     return <div className="container" style={{ textAlign: 'center', paddingTop: '100px' }}>Loading...</div>;
   }
 
-  // 각 상품권 종류별 가장 높은 매입가(최저 할인율) 찾기
+  // 각 상품권 종류별 가장 높은 매입가(최저 할인율) 찾기 (맥스솔루션 베스트 제외)
   const bestPrices = {
-    shinsegae: Math.max(...prices.filter(p => p.gift_card_type === 'shinsegae').map(p => p.buy_price), 0),
-    lotte: Math.max(...prices.filter(p => p.gift_card_type === 'lotte').map(p => p.buy_price), 0),
-    hyundai: Math.max(...prices.filter(p => p.gift_card_type === 'hyundai').map(p => p.buy_price), 0),
+    shinsegae: Math.max(...prices.filter(p => p.gift_card_type === 'shinsegae' && p.site_name !== '맥스솔루션').map(p => p.buy_price), 0),
+    lotte: Math.max(...prices.filter(p => p.gift_card_type === 'lotte' && p.site_name !== '맥스솔루션').map(p => p.buy_price), 0),
+    hyundai: Math.max(...prices.filter(p => p.gift_card_type === 'hyundai' && p.site_name !== '맥스솔루션').map(p => p.buy_price), 0),
   };
 
   // 렌더링용 사이트 목록 추출
@@ -66,6 +66,7 @@ export default function Home() {
   // 각 사이트별로 전체 상품권 중 베스트 가격을 몇 개나 가지고 있는지 카운트
   const siteBestCount: Record<string, number> = {};
   prices.forEach(p => {
+    if (p.site_name === '맥스솔루션') return;
     const type = p.gift_card_type as keyof typeof bestPrices;
     if (p.buy_price === bestPrices[type]) {
       siteBestCount[p.site_name] = (siteBestCount[p.site_name] || 0) + 1;
@@ -95,7 +96,7 @@ export default function Home() {
     <div className="container">
       <section className="best-cards">
         {(Object.keys(GIFT_CARD_NAMES) as Array<keyof typeof GIFT_CARD_NAMES>).map(type => {
-          const typePrices = prices.filter(p => p.gift_card_type === type);
+          const typePrices = prices.filter(p => p.gift_card_type === type && p.site_name !== '맥스솔루션');
           if (typePrices.length === 0) return null;
           
           const best = typePrices.reduce((prev, curr) => {
