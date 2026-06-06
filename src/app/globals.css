@@ -254,11 +254,11 @@ footer a:hover {
 
   th, td {
     padding: 0.8rem 0.2rem;
+    text-align: center;
   }
 
   th {
     font-size: 0.75rem;
-    text-align: center;
   }
 
   .price-value {
