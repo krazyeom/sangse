@@ -137,10 +137,10 @@ export default function Home() {
         <table>
           <thead>
             <tr>
-              <th>상품권 샵</th>
-              <th>신세계 (10만원권)</th>
-              <th>현대 (10만원권)</th>
-              <th>롯데 (10만원권)</th>
+              <th><span className="hide-mobile">상품권 </span>샵</th>
+              <th>신세계<span className="hide-mobile"> (10만원권)</span></th>
+              <th>현대<span className="hide-mobile"> (10만원권)</span></th>
+              <th>롯데<span className="hide-mobile"> (10만원권)</span></th>
             </tr>
           </thead>
           <tbody>
@@ -157,7 +157,10 @@ export default function Home() {
                       rel="noreferrer" 
                       className={`site-link ${siteBestCount[site] ? `best-count-${siteBestCount[site]}` : ''}`}
                     >
-                      {site}
+                      <span className="site-name-text">{site}</span>
+                      <span className={`site-name-mobile ${site.replace(/상품권$/, '').length >= 4 ? 'site-name-small' : ''}`}>
+                        {site.replace(/상품권$/, '')}
+                      </span>
                     </a>
                   </td>
                   {(['shinsegae', 'hyundai', 'lotte'] as const).map(type => {

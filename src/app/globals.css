@@ -222,6 +222,10 @@ footer a:hover {
   text-decoration: underline;
 }
 
+.site-name-mobile {
+  display: none;
+}
+
 @media (max-width: 768px) {
   .container {
     padding: 1rem;
@@ -238,7 +242,28 @@ footer a:hover {
   }
   
   th, td {
-    padding: 1rem;
+    padding: 0.8rem 0.4rem;
+  }
+
+  th {
+    font-size: 0.75rem;
+  }
+
+  .hide-mobile {
+    display: none !important;
+  }
+  
+  .site-name-text {
+    display: none !important;
+  }
+  
+  .site-name-mobile {
+    display: inline !important;
+  }
+  
+  .site-name-small {
+    font-size: 0.75rem !important;
+    letter-spacing: -0.5px;
   }
 }
 
