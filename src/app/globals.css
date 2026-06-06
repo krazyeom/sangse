@@ -241,11 +241,36 @@ footer a:hover {
     text-align: left;
   }
   
+  table {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  th:first-child, td:first-child {
+    width: 31%;
+  }
+
+  th:not(:first-child), td:not(:first-child) {
+    width: 23%;
+  }
+
   th, td {
-    padding: 0.8rem 0.4rem;
+    padding: 0.8rem 0.2rem;
   }
 
   th {
+    font-size: 0.75rem;
+  }
+
+  .price-value {
+    display: block;
+    font-size: 0.9rem;
+  }
+
+  .price-rate {
+    display: block;
+    margin-left: 0;
+    margin-top: 0.1rem;
     font-size: 0.75rem;
   }
 
