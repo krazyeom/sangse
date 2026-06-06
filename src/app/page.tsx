@@ -193,6 +193,23 @@ export default function Home() {
       </section>
 
       <footer>
+        <div style={{ marginBottom: '2rem' }}>
+          <a href="https://qr.kakaopay.com/Ej70ez4QV" target="_blank" rel="noreferrer" style={{ 
+            display: 'inline-flex', 
+            alignItems: 'center', 
+            gap: '0.5rem', 
+            background: '#FEE500', 
+            color: '#191919', 
+            padding: '0.8rem 1.5rem', 
+            borderRadius: '30px', 
+            textDecoration: 'none', 
+            fontWeight: '700', 
+            boxShadow: '0 4px 10px rgba(0,0,0,0.2)',
+            transition: 'transform 0.2s ease'
+          }}>
+            ☕️ 개발자에게 커피 한 잔 후원하기
+          </a>
+        </div>
         {lastUpdate && (
           <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>
             마지막 업데이트: {lastUpdate}
