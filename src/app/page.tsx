@@ -15,8 +15,8 @@ interface PriceData {
 
 const GIFT_CARD_NAMES = {
   shinsegae: '신세계 상품권',
-  lotte: '롯데 상품권',
-  hyundai: '현대 상품권'
+  hyundai: '현대 상품권',
+  lotte: '롯데 상품권'
 };
 
 export default function Home() {
@@ -139,8 +139,8 @@ export default function Home() {
             <tr>
               <th>상품권 샵</th>
               <th>신세계 (10만원권)</th>
-              <th>롯데 (10만원권)</th>
               <th>현대 (10만원권)</th>
+              <th>롯데 (10만원권)</th>
             </tr>
           </thead>
           <tbody>
@@ -160,7 +160,7 @@ export default function Home() {
                       {site}
                     </a>
                   </td>
-                  {(['shinsegae', 'lotte', 'hyundai'] as const).map(type => {
+                  {(['shinsegae', 'hyundai', 'lotte'] as const).map(type => {
                     const priceData = siteDataMap[site][type];
                     const isBest = priceData && priceData.buy_price === bestPrices[type];
                     
