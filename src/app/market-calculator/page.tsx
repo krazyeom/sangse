@@ -191,28 +191,25 @@ export default function Calculator() {
 
             return (
             <div key={type} style={{ background: 'var(--background)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.2rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                <div>
-                  <h3 style={{ color: 'var(--primary-color)', fontSize: '1.05rem', fontWeight: '700', margin: '0 0 0.3rem 0' }}>
-                    {GIFT_CARD_NAMES[type]}
-                  </h3>
-                  {priceData ? (
-                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
-                      할인율: {discountPct}% <span style={{ opacity: 0.5 }}>|</span> 10만 기준 -{discountAmountPer100k.toLocaleString()}원
-                    </div>
-                  ) : (
-                    <div style={{ fontSize: '0.85rem', color: '#e53935' }}>해당 샵 시세 정보 없음</div>
-                  )}
-                </div>
-                {typeFaceValue > 0 && (
-                  <div style={{ textAlign: 'right', background: 'var(--card-bg)', padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-                    <div style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '0.95rem' }}>
-                      합계: {Math.round(typePayout).toLocaleString()}원
-                    </div>
-                    <div style={{ color: '#e53935', fontSize: '0.8rem', marginTop: '0.1rem' }}>
-                      할인: -{Math.round(typeDiscount).toLocaleString()}원
-                    </div>
+              <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '1.2rem' }}>
+                <h3 style={{ color: 'var(--primary-color)', fontSize: '1.05rem', fontWeight: '700', margin: '0 0 0.4rem 0' }}>
+                  {GIFT_CARD_NAMES[type]}
+                </h3>
+                {priceData ? (
+                  <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.8rem', fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                    <span>할인율: {discountPct}%</span>
+                    {typeFaceValue > 0 && (
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span style={{ opacity: 0.5 }}>|</span>
+                        <span>
+                          합계: <strong style={{ color: 'var(--text-primary)', fontSize: '0.95rem' }}>{Math.round(typePayout).toLocaleString()}원</strong> 
+                          <span style={{ color: '#e53935', marginLeft: '4px' }}>(-{Math.round(typeDiscount).toLocaleString()})</span>
+                        </span>
+                      </span>
+                    )}
                   </div>
+                ) : (
+                  <div style={{ fontSize: '0.85rem', color: '#e53935' }}>해당 샵 시세 정보 없음</div>
                 )}
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.8rem' }}>
