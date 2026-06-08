@@ -173,16 +173,55 @@ export default function Calculator() {
         <h2 style={{ marginBottom: '1.5rem', fontSize: '1.1rem', fontWeight: '700' }}>2. 보유 수량 입력</h2>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-          {(Object.keys(GIFT_CARD_NAMES) as Array<keyof typeof GIFT_CARD_NAMES>).map(type => (
-            <div key={type}>
-              <h3 style={{ marginBottom: '0.8rem', color: 'var(--primary-color)', fontSize: '1rem', fontWeight: '600' }}>{GIFT_CARD_NAMES[type]}</h3>
+          {(Object.keys(GIFT_CARD_NAMES) as Array<keyof typeof GIFT_CARD_NAMES>).map(type => {
+            const priceData = siteDataMap[selectedSite]?.[type];
+            const rate = priceData ? priceData.buy_price / 100000 : 0;
+            const discountPct = priceData ? priceData.buy_rate : 0;
+            const discountAmountPer100k = priceData ? 100000 - priceData.buy_price : 0;
+
+            let typeFaceValue = 0;
+            let typePayout = 0;
+            DENOMINATIONS.forEach(denom => {
+              const count = counts[`${type}-${denom.value}`] || 0;
+              const faceValue = count * denom.value;
+              typeFaceValue += faceValue;
+              typePayout += faceValue * rate;
+            });
+            const typeDiscount = typeFaceValue - typePayout;
+
+            return (
+            <div key={type} style={{ background: 'var(--background)', border: '1px solid var(--border-color)', borderRadius: '12px', padding: '1.2rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.2rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <div>
+                  <h3 style={{ color: 'var(--primary-color)', fontSize: '1.05rem', fontWeight: '700', margin: '0 0 0.3rem 0' }}>
+                    {GIFT_CARD_NAMES[type]}
+                  </h3>
+                  {priceData ? (
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', fontWeight: '500' }}>
+                      할인율: {discountPct}% <span style={{ opacity: 0.5 }}>|</span> 10만 기준 -{discountAmountPer100k.toLocaleString()}원
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '0.85rem', color: '#e53935' }}>해당 샵 시세 정보 없음</div>
+                  )}
+                </div>
+                {typeFaceValue > 0 && (
+                  <div style={{ textAlign: 'right', background: 'var(--card-bg)', padding: '0.4rem 0.8rem', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
+                    <div style={{ color: 'var(--text-primary)', fontWeight: '700', fontSize: '0.95rem' }}>
+                      합계: {Math.round(typePayout).toLocaleString()}원
+                    </div>
+                    <div style={{ color: '#e53935', fontSize: '0.8rem', marginTop: '0.1rem' }}>
+                      할인: -{Math.round(typeDiscount).toLocaleString()}원
+                    </div>
+                  </div>
+                )}
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.8rem' }}>
                 {DENOMINATIONS.map(denom => (
                   <div key={denom.value}>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.4rem', textAlign: 'center' }}>
+                    <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '0.4rem', textAlign: 'center' }}>
                       {denom.label}
                     </label>
-                    <div style={{ background: 'var(--background)', borderRadius: '6px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+                    <div style={{ background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
                       <WheelPicker
                         items={QUANTITY_OPTIONS}
                         selectedValue={counts[`${type}-${denom.value}`] || 0}
@@ -195,7 +234,7 @@ export default function Calculator() {
                 ))}
               </div>
             </div>
-          ))}
+          )})}
         </div>
       </div>
 
