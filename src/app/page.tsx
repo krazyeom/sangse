@@ -70,24 +70,39 @@ export default function Home() {
   // 렌더링용 사이트 목록 추출
   let siteNames = Array.from(new Set(prices.map(p => p.site_name)));
 
-  // 각 사이트별로 전체 상품권 중 베스트 가격을 몇 개나 가지고 있는지 카운트
+  // 각 사이트별로 전체 상품권 중 베스트 가격을 몇 개나 가지고 있는지 카운트, 그리고 3종류 총합 계산
   const siteBestCount: Record<string, number> = {};
+  const siteSumPrice: Record<string, number> = {};
+
   prices.forEach(p => {
+    // 사이트별 총합 누적 (모든 상품권 가격 합산)
+    siteSumPrice[p.site_name] = (siteSumPrice[p.site_name] || 0) + p.buy_price;
+
     if (p.site_name === '맥스솔루션') return;
+
     const type = p.gift_card_type as keyof typeof bestPrices;
-    if (p.buy_price === bestPrices[type]) {
+    // 전체 최고가이거나 실질적 최고가(추천)이면 카운트
+    if (p.buy_price === bestPrices[type] || p.buy_price === recommendedBestPrices[type]) {
       siteBestCount[p.site_name] = (siteBestCount[p.site_name] || 0) + 1;
     }
   });
 
-  // 사이트 목록 정렬 (베스트 가격 보유 개수 내림차순 -> 이름 가나다순)
+  // 사이트 목록 정렬 (베스트 가격 보유 개수 내림차순 -> 3종류 총합 내림차순 -> 이름 가나다순)
   siteNames.sort((a, b) => {
     const countA = siteBestCount[a] || 0;
     const countB = siteBestCount[b] || 0;
     if (countB !== countA) {
       return countB - countA; // 베스트 카운트가 높은 순 (3 -> 2 -> 1)
     }
-    return a.localeCompare(b, 'ko-KR'); // 같을 경우 이름 가나다순
+    
+    // 카운트가 같을 경우 3종류 총합이 높은 순 (1위와 가격 차이가 가장 적은 순)
+    const sumA = siteSumPrice[a] || 0;
+    const sumB = siteSumPrice[b] || 0;
+    if (sumB !== sumA) {
+      return sumB - sumA;
+    }
+    
+    return a.localeCompare(b, 'ko-KR'); // 총합마저 같을 경우 이름 가나다순
   });
 
   // 크롤링에 실패해 DB에 없는 '베스트상품권'을 테이블 최하단에 수동으로 추가 (클릭 이동용)
