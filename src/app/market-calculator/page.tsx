@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import WheelPicker from '@/components/WheelPicker';
+import '../calculator/calculator.css';
 
 interface PriceData {
   id: number;
@@ -23,6 +25,11 @@ const DENOMINATIONS = [
   { value: 100000, label: '10만원권' },
   { value: 50000, label: '5만원권' }
 ];
+
+const QUANTITY_OPTIONS = Array.from({ length: 101 }, (_, i) => ({
+  value: i,
+  label: i.toString()
+}));
 
 export default function Calculator() {
   const [prices, setPrices] = useState<PriceData[]>([]);
@@ -96,10 +103,12 @@ export default function Calculator() {
   });
 
   useEffect(() => {
-    if (siteNames.length > 0 && !selectedSite) {
+    // 빈 데이터 상태에서 '베스트상품권'이 기본으로 잡히는 현상을 방지
+    if (prices.length > 0 && selectedSite === '') {
       setSelectedSite(siteNames[0]);
     }
-  }, [siteNames, selectedSite]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [prices.length]);
 
   const handleCountChange = (type: string, denom: number, value: string) => {
     const num = parseInt(value, 10);
@@ -170,17 +179,18 @@ export default function Calculator() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(100px, 1fr))', gap: '0.8rem' }}>
                 {DENOMINATIONS.map(denom => (
                   <div key={denom.value}>
-                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--text-secondary)', marginBottom: '0.4rem', textAlign: 'center' }}>
                       {denom.label}
                     </label>
-                    <input 
-                      type="number" 
-                      min="0"
-                      placeholder="0"
-                      value={counts[`${type}-${denom.value}`] || ''}
-                      onChange={(e) => handleCountChange(type, denom.value, e.target.value)}
-                      style={{ width: '100%', padding: '0.6rem', borderRadius: '6px', border: '1px solid var(--border-color)', background: 'var(--background)', color: 'var(--text-primary)', textAlign: 'right', fontSize: '1rem', outline: 'none' }}
-                    />
+                    <div style={{ background: 'var(--background)', borderRadius: '6px', border: '1px solid var(--border-color)', overflow: 'hidden' }}>
+                      <WheelPicker
+                        items={QUANTITY_OPTIONS}
+                        selectedValue={counts[`${type}-${denom.value}`] || 0}
+                        onChange={(val) => setCounts(prev => ({ ...prev, [`${type}-${denom.value}`]: val }))}
+                        unit="장"
+                        visibleItems={3}
+                      />
+                    </div>
                   </div>
                 ))}
               </div>

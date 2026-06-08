@@ -193,8 +193,8 @@ export default function Home() {
                           <>
                             <span className="price-value">{priceData.buy_price.toLocaleString()}원</span>
                             <span className="price-rate">
+                              {!isBest && `(-${(bestPrices[type] - priceData.buy_price).toLocaleString()}) `}
                               ({priceData.buy_rate}%)
-                              {!isBest && ` (-${(bestPrices[type] - priceData.buy_price).toLocaleString()})`}
                             </span>
                           </>
                         ) : (

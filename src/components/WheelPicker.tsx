@@ -7,12 +7,12 @@ interface WheelPickerProps {
   selectedValue: number;
   onChange: (value: number) => void;
   unit?: string;
+  visibleItems?: number;
 }
 
 const ITEM_HEIGHT = 44;
-const VISIBLE_ITEMS = 5;
 
-export default function WheelPicker({ items, selectedValue, onChange, unit }: WheelPickerProps) {
+export default function WheelPicker({ items, selectedValue, onChange, unit, visibleItems = 5 }: WheelPickerProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const isScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -33,7 +33,7 @@ export default function WheelPicker({ items, selectedValue, onChange, unit }: Wh
   const scrollToIndex = useCallback((index: number, smooth: boolean = true) => {
     const el = scrollRef.current;
     if (!el) return;
-    const spacerHeight = (VISIBLE_ITEMS - 1) / 2 * ITEM_HEIGHT;
+    const spacerHeight = (visibleItems - 1) / 2 * ITEM_HEIGHT;
     const targetTop = index * ITEM_HEIGHT + spacerHeight - (el.clientHeight / 2 - ITEM_HEIGHT / 2);
     el.scrollTo({
       top: targetTop,
@@ -57,7 +57,7 @@ export default function WheelPicker({ items, selectedValue, onChange, unit }: Wh
     const el = scrollRef.current;
     if (!el) return;
 
-    const spacerHeight = (VISIBLE_ITEMS - 1) / 2 * ITEM_HEIGHT;
+    const spacerHeight = (visibleItems - 1) / 2 * ITEM_HEIGHT;
     const scrollTop = el.scrollTop;
     const centerOffset = scrollTop + el.clientHeight / 2 - spacerHeight - ITEM_HEIGHT / 2;
     const rawIndex = Math.round(centerOffset / ITEM_HEIGHT);
@@ -95,10 +95,10 @@ export default function WheelPicker({ items, selectedValue, onChange, unit }: Wh
     };
   };
 
-  const spacerHeight = (VISIBLE_ITEMS - 1) / 2 * ITEM_HEIGHT;
+  const spacerHeight = (visibleItems - 1) / 2 * ITEM_HEIGHT;
 
   return (
-    <div className="calc-wheel-picker-container" style={{ height: VISIBLE_ITEMS * ITEM_HEIGHT - ITEM_HEIGHT + ITEM_HEIGHT }}>
+    <div className="calc-wheel-picker-container" style={{ height: visibleItems * ITEM_HEIGHT - ITEM_HEIGHT + ITEM_HEIGHT }}>
       <div className="calc-wheel-picker-highlight" />
       <div
         ref={scrollRef}
