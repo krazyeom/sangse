@@ -40,9 +40,13 @@ export default function Home() {
   const [mileRate, setMileRate] = useState(1500);
   const [purchasePrice, setPurchasePrice] = useState(99000);
   const [buybackPrice, setBuybackPrice] = useState(97150);
+  const [isDoublePoint, setIsDoublePoint] = useState(false);
 
   const results = useMemo(() => {
-    const accruedMiles = Math.round(purchasePrice / mileRate);
+    let accruedMiles = Math.round(purchasePrice / mileRate);
+    if (isDoublePoint) {
+      accruedMiles *= 2;
+    }
     const loss = purchasePrice - buybackPrice;
     const costPerMile = accruedMiles > 0 ? Math.round(loss / accruedMiles) : 0;
     const deductionPct = ((FACE_VALUE - buybackPrice) / FACE_VALUE) * 100;
@@ -55,7 +59,7 @@ export default function Home() {
       costPerMile,
       deductionPct: deductionPctRounded,
     };
-  }, [mileRate, purchasePrice, buybackPrice]);
+  }, [mileRate, purchasePrice, buybackPrice, isDoublePoint]);
 
   const lossIsNegative = results.loss < 0;
   const lossIsZero = results.loss === 0;
@@ -146,8 +150,17 @@ export default function Home() {
 
       {/* Result Cards */}
       <div className="calc-result-section calc-animate-in">
-        <div className="calc-result-section-title">
-          <span>📋</span> 계산 결과
+        <div className="calc-result-section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div><span>📋</span> 계산 결과</div>
+          <label style={{ fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', fontWeight: '500', color: 'var(--text-primary)' }}>
+            <input 
+              type="checkbox" 
+              checked={isDoublePoint}
+              onChange={(e) => setIsDoublePoint(e.target.checked)}
+              style={{ width: '1.2rem', height: '1.2rem', cursor: 'pointer' }}
+            />
+            2배 적립
+          </label>
         </div>
         <div className="calc-result-grid">
           {/* 적립 마일 */}
