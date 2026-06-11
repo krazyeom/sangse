@@ -4,8 +4,8 @@ import { useState, useMemo, useEffect } from 'react';
 import WheelPicker from '@/components/WheelPicker';
 import './calculator.css';
 
-// ===== Data Options =====
 const MILE_RATE_OPTIONS = [
+  { value: 918, label: '918' },
   { value: 1000, label: '1,000' },
   { value: 1500, label: '1,500' },
   { value: 2000, label: '2,000' },
