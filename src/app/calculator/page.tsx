@@ -18,8 +18,8 @@ const PURCHASE_PRICE_OPTIONS = Array.from({ length: 41 }, (_, i) => {
   return { value, label: value.toLocaleString() };
 });
 
-const BUYBACK_PRICE_OPTIONS = Array.from({ length: 71 }, (_, i) => {
-  const value = 95000 + i * 50;
+const BUYBACK_PRICE_OPTIONS = Array.from({ length: 401 }, (_, i) => {
+  const value = 95000 + i * 10;
   return { value, label: value.toLocaleString() };
 });
 

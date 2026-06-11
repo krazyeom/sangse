@@ -16,13 +16,34 @@ export default function WheelPicker({ items, selectedValue, onChange, unit, visi
   const scrollRef = useRef<HTMLDivElement>(null);
   const isScrollingRef = useRef(false);
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [activeIndex, setActiveIndex] = useState(() =>
-    items.findIndex(item => item.value === selectedValue)
-  );
+  const [activeIndex, setActiveIndex] = useState(() => {
+    let idx = items.findIndex(item => item.value === selectedValue);
+    if (idx === -1 && items.length > 0) {
+      let minDiff = Infinity;
+      for (let i = 0; i < items.length; i++) {
+        const diff = Math.abs(items[i].value - selectedValue);
+        if (diff < minDiff) {
+          minDiff = diff;
+          idx = i;
+        }
+      }
+    }
+    return Math.max(0, idx);
+  });
 
   // Sync active index when selectedValue changes externally
   useEffect(() => {
-    const idx = items.findIndex(item => item.value === selectedValue);
+    let idx = items.findIndex(item => item.value === selectedValue);
+    if (idx === -1 && items.length > 0) {
+      let minDiff = Infinity;
+      for (let i = 0; i < items.length; i++) {
+        const diff = Math.abs(items[i].value - selectedValue);
+        if (diff < minDiff) {
+          minDiff = diff;
+          idx = i;
+        }
+      }
+    }
     if (idx !== -1 && idx !== activeIndex) {
       setActiveIndex(idx);
       scrollToIndex(idx, false);
@@ -43,7 +64,17 @@ export default function WheelPicker({ items, selectedValue, onChange, unit, visi
 
   // Initial scroll position
   useEffect(() => {
-    const idx = items.findIndex(item => item.value === selectedValue);
+    let idx = items.findIndex(item => item.value === selectedValue);
+    if (idx === -1 && items.length > 0) {
+      let minDiff = Infinity;
+      for (let i = 0; i < items.length; i++) {
+        const diff = Math.abs(items[i].value - selectedValue);
+        if (diff < minDiff) {
+          minDiff = diff;
+          idx = i;
+        }
+      }
+    }
     if (idx !== -1) {
       // Small delay to ensure layout is computed
       requestAnimationFrame(() => {
