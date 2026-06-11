@@ -72,9 +72,7 @@ export default function Home() {
   }, [prices]);
 
   useEffect(() => {
-    if (mileRate === 918) {
-      setIsDoublePoint(true);
-    }
+    setIsDoublePoint(mileRate === 918);
   }, [mileRate]);
 
   const handleCardSelect = (card: 'shinsegae' | 'hyundai' | 'lotte') => {
