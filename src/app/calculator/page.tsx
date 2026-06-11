@@ -105,7 +105,7 @@ export default function Home() {
       </div>
 
       {/* Card Type Selector */}
-      <div className="calc-tab-group calc-animate-in" style={{ marginTop: '16px' }}>
+      <div className="calc-tab-group calc-animate-in">
         <button 
           onClick={() => handleCardSelect('shinsegae')}
           className={`calc-tab-btn ${selectedCard === 'shinsegae' ? 'active' : ''}`}
