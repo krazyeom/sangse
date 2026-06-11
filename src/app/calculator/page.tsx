@@ -164,9 +164,10 @@ export default function Home() {
           <div style={{ marginBottom: '12px' }}>
             <input
               type="number"
+              max={100000}
               className="calc-manual-input"
               value={purchasePrice || ''}
-              onChange={(e) => setPurchasePrice(Number(e.target.value) || 0)}
+              onChange={(e) => setPurchasePrice(Math.min(Number(e.target.value) || 0, 100000))}
             />
           </div>
           <WheelPicker
@@ -186,9 +187,10 @@ export default function Home() {
           <div style={{ marginBottom: '12px' }}>
             <input
               type="number"
+              max={100000}
               className="calc-manual-input"
               value={buybackPrice || ''}
-              onChange={(e) => setBuybackPrice(Number(e.target.value) || 0)}
+              onChange={(e) => setBuybackPrice(Math.min(Number(e.target.value) || 0, 100000))}
             />
           </div>
           <WheelPicker
