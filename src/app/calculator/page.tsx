@@ -71,6 +71,12 @@ export default function Home() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prices]);
 
+  useEffect(() => {
+    if (mileRate === 918) {
+      setIsDoublePoint(true);
+    }
+  }, [mileRate]);
+
   const handleCardSelect = (card: 'shinsegae' | 'hyundai' | 'lotte') => {
     setSelectedCard(card);
     if (prices.length > 0) {
