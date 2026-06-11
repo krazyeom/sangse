@@ -137,7 +137,15 @@ export default function Home() {
             if (curr.buy_price === prev.buy_price) {
               const prevCount = siteBestCount[prev.site_name] || 0;
               const currCount = siteBestCount[curr.site_name] || 0;
-              return currCount > prevCount ? curr : prev;
+              if (currCount > prevCount) return curr;
+              if (currCount < prevCount) return prev;
+              
+              const sumPrev = siteSumPrice[prev.site_name] || 0;
+              const sumCurr = siteSumPrice[curr.site_name] || 0;
+              if (sumCurr > sumPrev) return curr;
+              if (sumCurr < sumPrev) return prev;
+
+              return curr.site_name.localeCompare(prev.site_name) < 0 ? curr : prev;
             }
             return prev;
           });
