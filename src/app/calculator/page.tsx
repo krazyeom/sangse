@@ -50,10 +50,17 @@ export default function Home() {
 
   const bestPrices = useMemo(() => {
     if (prices.length === 0) return { shinsegae: 97150, lotte: 97150, hyundai: 97150 };
+    
+    const getBest = (type: string) => {
+      const filtered = prices.filter(p => p.gift_card_type === type && p.site_name !== '맥스솔루션');
+      if (filtered.length === 0) return 97150;
+      return Math.max(...filtered.map(p => p.buy_price));
+    };
+
     return {
-      shinsegae: Math.max(...prices.filter(p => p.gift_card_type === 'shinsegae' && p.site_name !== '맥스솔루션').map(p => p.buy_price), 97150),
-      lotte: Math.max(...prices.filter(p => p.gift_card_type === 'lotte' && p.site_name !== '맥스솔루션').map(p => p.buy_price), 97150),
-      hyundai: Math.max(...prices.filter(p => p.gift_card_type === 'hyundai' && p.site_name !== '맥스솔루션').map(p => p.buy_price), 97150),
+      shinsegae: getBest('shinsegae'),
+      lotte: getBest('lotte'),
+      hyundai: getBest('hyundai'),
     };
   }, [prices]);
 
@@ -244,12 +251,7 @@ export default function Home() {
           </div>
         </div>
       </div>
-      {/* Footer */}
-      <footer className="calc-footer calc-animate-in" style={{ animationDelay: '400ms' }}>
-        <p>
-          made by <a href="https://github.com/krazyeom" target="_blank" rel="noopener noreferrer">krazyeom</a>
-        </p>
-      </footer>
+
     </main>
     </div>
   );

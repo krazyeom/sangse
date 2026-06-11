@@ -12,7 +12,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko">
-      <body>
+      <body style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
         <nav className="main-nav">
           <div className="nav-container">
             <a href="/" className="nav-logo">Sang Tech</a>
@@ -26,7 +26,27 @@ export default function RootLayout({
             </div>
           </div>
         </nav>
-        {children}
+        <div style={{ flex: 1 }}>
+          {children}
+        </div>
+        <footer style={{
+          textAlign: 'center',
+          padding: '2rem 1rem',
+          fontSize: '0.9rem',
+          color: 'var(--text-secondary)',
+          background: 'var(--card-bg)',
+          borderTop: '1px solid var(--border-color)',
+          marginTop: 'auto'
+        }}>
+          <div style={{ marginBottom: '0.8rem' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--background)', padding: '8px 16px', borderRadius: '20px', border: '1px solid var(--border-color)', fontWeight: '500' }}>
+              ☕️ 개발자에게 커피 한 잔 후원하기
+            </span>
+          </div>
+          <div style={{ letterSpacing: '0.02em' }}>
+            made by krazyeom | 그래염 @ LTC
+          </div>
+        </footer>
       </body>
     </html>
   );
