@@ -38,13 +38,25 @@ export default function RootLayout({
           borderTop: '1px solid var(--border-color)',
           marginTop: 'auto'
         }}>
-          <div style={{ marginBottom: '0.8rem' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'var(--background)', padding: '8px 16px', borderRadius: '20px', border: '1px solid var(--border-color)', fontWeight: '500' }}>
+          <div style={{ marginBottom: '1.2rem' }}>
+            <a href="https://qr.kakaopay.com/Ej70ez4QV" target="_blank" rel="noreferrer" style={{ 
+              display: 'inline-flex', 
+              alignItems: 'center', 
+              gap: '0.5rem', 
+              background: '#FEE500', 
+              color: '#191919', 
+              padding: '0.8rem 1.5rem', 
+              borderRadius: '30px', 
+              textDecoration: 'none', 
+              fontWeight: '700', 
+              boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+              transition: 'transform 0.2s ease'
+            }}>
               ☕️ 개발자에게 커피 한 잔 후원하기
-            </span>
+            </a>
           </div>
-          <div style={{ letterSpacing: '0.02em' }}>
-            made by krazyeom | 그래염 @ LTC
+          <div style={{ letterSpacing: '0.02em', fontSize: '0.85rem' }}>
+            made by <a href="https://github.com/krazyeom" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>krazyeom</a> | 그래염 @ <a href="https://cafe.naver.com/hexenyang" target="_blank" rel="noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>LTC</a>
           </div>
         </footer>
       </body>
