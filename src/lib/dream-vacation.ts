@@ -9,3 +9,7 @@ export function isDreamVacationPeriod(date = new Date()): boolean {
 export function isDreamVacationRankExcluded(siteName: string, date = new Date()): boolean {
   return siteName.includes('드림상품권') && isDreamVacationPeriod(date);
 }
+
+export function shouldShowDreamVacationRow(siteName: string, date = new Date()): boolean {
+  return siteName.includes('드림상품권') && isDreamVacationPeriod(date);
+}

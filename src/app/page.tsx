@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { isDreamVacationRankExcluded } from '@/lib/dream-vacation';
+import { isDreamVacationRankExcluded, shouldShowDreamVacationRow } from '@/lib/dream-vacation';
 import { getSiteRegion, hasSiteRegion } from '@/lib/site-order';
 
 interface PriceData {
@@ -96,6 +96,9 @@ export default function Home() {
 
   // 렌더링용 사이트 목록 추출
   let siteNames = Array.from(new Set(prices.map(p => p.site_name)));
+  if (shouldShowDreamVacationRow('드림상품권') && !siteNames.includes('드림상품권')) {
+    siteNames.push('드림상품권');
+  }
 
   // 각 사이트별로 전체 상품권 중 베스트 가격을 몇 개나 가지고 있는지 카운트, 그리고 3종류 총합 계산
   const siteBestCount: Record<string, number> = {};
@@ -118,8 +121,8 @@ export default function Home() {
 
   // 사이트 목록 정렬 (비교 대상 우선 -> 괄호 없는 업체는 순위 기준 -> 괄호 있는 업체는 지역별 묶음 -> 그 안에서 순위 기준)
   siteNames.sort((a, b) => {
-    const excludedA = isExcludedCompareSite(a) || isDreamVacationRankExcluded(a);
-    const excludedB = isExcludedCompareSite(b) || isDreamVacationRankExcluded(b);
+    const excludedA = isExcludedCompareSite(a);
+    const excludedB = isExcludedCompareSite(b);
     if (excludedA !== excludedB) return excludedA ? 1 : -1;
 
     const regionA = getSiteRegion(a);
@@ -130,6 +133,10 @@ export default function Home() {
     if (hasRegionA && hasRegionB && regionA !== regionB) {
       return regionA!.localeCompare(regionB!, 'ko-KR');
     }
+
+    const dreamA = isDreamVacationRankExcluded(a);
+    const dreamB = isDreamVacationRankExcluded(b);
+    if (dreamA !== dreamB) return dreamA ? 1 : -1;
 
     // 1순위: 최고가 보유 개수
     const countA = siteBestCount[a] || 0;
@@ -154,7 +161,7 @@ export default function Home() {
     siteNames.push('베스트상품권');
   }
 
-  const comparisonSiteCount = siteNames.filter((site) => site !== '베스트상품권' && !isExcludedCompareSite(site) && !isDreamVacationRankExcluded(site)).length;
+  const comparisonSiteCount = siteNames.filter((site) => site !== '베스트상품권' && !isExcludedCompareSite(site)).length;
 
   if (loading) {
     return <div className="container" style={{ textAlign: 'center', paddingTop: '100px' }}>Loading...</div>;
@@ -292,9 +299,11 @@ export default function Home() {
           </thead>
           <tbody>
             {siteNames.map(site => {
-              const url = site === '베스트상품권' 
-                ? 'https://bestgiftcard.kr/' 
-                : (siteDataMap[site]['shinsegae']?.site_url || siteDataMap[site]['lotte']?.site_url || siteDataMap[site]['hyundai']?.site_url);
+              const url = site === '베스트상품권'
+                ? 'https://bestgiftcard.kr/'
+                : site === '드림상품권'
+                  ? 'https://드림상품권.com'
+                  : (siteDataMap[site]['shinsegae']?.site_url || siteDataMap[site]['lotte']?.site_url || siteDataMap[site]['hyundai']?.site_url);
               return (
                 <tr
                   key={site}
@@ -302,7 +311,9 @@ export default function Home() {
                     ? 'row-maxsolution'
                     : site === '도전상품권(삼성)'
                       ? 'row-dojeon'
-                      : site === '더세일상품권(삼성)'
+                      : site === '드림상품권'
+                        ? 'row-dream'
+                        : site === '더세일상품권(삼성)'
                         ? 'row-thesale'
                         : ''}
                 >
