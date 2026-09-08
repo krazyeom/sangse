@@ -10,7 +10,7 @@ import { crawlCitypay } from './citypay';
 import { crawlVipticket } from './vipticket';
 import { crawlPyTicket } from './pyticket';
 
-import { crawlDream } from './dream';
+import { crawlDream, isDreamVacationPeriod } from './dream';
 import { crawlWoorigift } from './woorigift';
 import { crawlTicketstore } from './ticketstore';
 import { crawlBestgift } from './bestgift';
@@ -47,6 +47,11 @@ export async function crawlAll(): Promise<CrawlResult[]> {
 
   for (const site of sites) {
     try {
+      if (site.name === '드림상품권' && isDreamVacationPeriod()) {
+        console.log(`Skipping ${site.name} during 9/7-9/13 vacation period (KST).`);
+        continue;
+      }
+
       console.log(`Crawling ${site.name}...`);
       const res = await site.fn();
       if (res && res.prices.length > 0) {

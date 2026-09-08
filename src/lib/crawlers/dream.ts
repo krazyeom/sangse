@@ -1,10 +1,28 @@
 import axios from 'axios';
 import { CrawlResult, PriceInfo } from '../types';
 
+export function isDreamVacationPeriod(date = new Date()): boolean {
+  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
+  const month = kst.getUTCMonth() + 1;
+  const day = kst.getUTCDate();
+
+  return month === 9 && day >= 7 && day <= 13;
+}
+
 export async function crawlDream(): Promise<CrawlResult> {
   const apiUrl = 'https://dream.phaze2-api.com/pricing/board';
   const displayUrl = 'https://드림상품권.com';
   const prices: PriceInfo[] = [];
+
+  if (isDreamVacationPeriod()) {
+    console.log('Skipping dream crawl during 9/7-9/13 vacation period (KST).');
+    return {
+      siteName: '드림상품권',
+      siteUrl: displayUrl,
+      timestamp: new Date(),
+      prices
+    };
+  }
 
   try {
     const { data } = await axios.get(apiUrl);
