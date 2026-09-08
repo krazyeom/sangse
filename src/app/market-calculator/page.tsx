@@ -31,7 +31,7 @@ const QUANTITY_OPTIONS = Array.from({ length: 101 }, (_, i) => ({
   label: i.toString()
 }));
 
-const EXCLUDED_COMPARE_SITES = ['맥스솔루션', '도전상품권', '기프너스', 'VIP상품권', '더세일상품권'];
+const EXCLUDED_COMPARE_SITES = ['맥스솔루션', '기프너스', 'VIP상품권', '더세일상품권'];
 
 const isExcludedCompareSite = (siteName: string) =>
   EXCLUDED_COMPARE_SITES.some((excluded) => siteName.includes(excluded));
