@@ -10,7 +10,8 @@ import { crawlCitypay } from './citypay';
 import { crawlVipticket } from './vipticket';
 import { crawlPyTicket } from './pyticket';
 
-import { crawlDream, isDreamVacationPeriod } from './dream';
+import { crawlDream } from './dream';
+import { isDreamVacationPeriod } from '@/lib/dream-vacation';
 import { crawlWoorigift } from './woorigift';
 import { crawlTicketstore } from './ticketstore';
 import { crawlBestgift } from './bestgift';

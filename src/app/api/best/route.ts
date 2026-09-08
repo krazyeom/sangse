@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db, { hasSupabaseConfig } from '@/lib/db';
+import { isDreamVacationRankExcluded } from '@/lib/dream-vacation';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,17 +28,18 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: true, best: null, allPrices: [] });
     }
 
+    const visiblePrices = allPrices.filter((p) => !isDreamVacationRankExcluded(p.site_name));
     const types = ['shinsegae', 'lotte', 'hyundai'];
     const absoluteMaxPrices: Record<string, number> = {};
     for (const t of types) {
-      const typePrices = allPrices.filter(p => p.gift_card_type === t);
+      const typePrices = visiblePrices.filter(p => p.gift_card_type === t);
       if (typePrices.length > 0) {
         absoluteMaxPrices[t] = Math.max(...typePrices.map(p => p.buy_price));
       }
     }
 
     const siteBestCount: Record<string, number> = {};
-    allPrices.forEach(p => {
+    visiblePrices.forEach(p => {
       const t = p.gift_card_type;
       if (p.buy_price === absoluteMaxPrices[t]) {
         siteBestCount[p.site_name] = (siteBestCount[p.site_name] || 0) + 1;
@@ -45,7 +47,7 @@ export async function GET(request: Request) {
     });
 
     // Filter by requested type if provided
-    let prices = type ? allPrices.filter(p => p.gift_card_type === type) : [...allPrices];
+    let prices = type ? visiblePrices.filter(p => p.gift_card_type === type) : [...visiblePrices];
 
     // Sort by buy_price descending, then by siteBestCount descending
     prices.sort((a, b) => {

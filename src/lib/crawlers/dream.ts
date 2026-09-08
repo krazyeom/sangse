@@ -1,13 +1,6 @@
 import axios from 'axios';
 import { CrawlResult, PriceInfo } from '../types';
-
-export function isDreamVacationPeriod(date = new Date()): boolean {
-  const kst = new Date(date.getTime() + 9 * 60 * 60 * 1000);
-  const month = kst.getUTCMonth() + 1;
-  const day = kst.getUTCDate();
-
-  return month === 9 && day >= 7 && day <= 13;
-}
+import { isDreamVacationPeriod } from '@/lib/dream-vacation';
 
 export async function crawlDream(): Promise<CrawlResult> {
   const apiUrl = 'https://dream.phaze2-api.com/pricing/board';

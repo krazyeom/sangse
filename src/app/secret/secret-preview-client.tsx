@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { isDreamVacationRankExcluded } from '@/lib/dream-vacation';
 
 interface PriceData {
   id: number;
@@ -75,15 +76,15 @@ export default function SecretPricePreviewClient({ initialView }: SecretPreviewC
   }, []);
 
   const buyBestPrices = useMemo(() => ({
-    shinsegae: Math.max(...prices.filter((p) => p.gift_card_type === 'shinsegae' && !isExcludedCompareSite(p.site_name)).map((p) => p.buy_price), 0),
-    lotte: Math.max(...prices.filter((p) => p.gift_card_type === 'lotte' && !isExcludedCompareSite(p.site_name)).map((p) => p.buy_price), 0),
-    hyundai: Math.max(...prices.filter((p) => p.gift_card_type === 'hyundai' && !isExcludedCompareSite(p.site_name)).map((p) => p.buy_price), 0),
+    shinsegae: Math.max(...prices.filter((p) => p.gift_card_type === 'shinsegae' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name)).map((p) => p.buy_price), 0),
+    lotte: Math.max(...prices.filter((p) => p.gift_card_type === 'lotte' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name)).map((p) => p.buy_price), 0),
+    hyundai: Math.max(...prices.filter((p) => p.gift_card_type === 'hyundai' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name)).map((p) => p.buy_price), 0),
   }), [prices]);
 
   const sellBestPrices = useMemo(() => ({
-    shinsegae: Math.max(...prices.filter((p) => p.gift_card_type === 'shinsegae' && !isExcludedCompareSite(p.site_name) && typeof p.sell_price === 'number').map((p) => p.sell_price as number), 0),
-    lotte: Math.max(...prices.filter((p) => p.gift_card_type === 'lotte' && !isExcludedCompareSite(p.site_name) && typeof p.sell_price === 'number').map((p) => p.sell_price as number), 0),
-    hyundai: Math.max(...prices.filter((p) => p.gift_card_type === 'hyundai' && !isExcludedCompareSite(p.site_name) && typeof p.sell_price === 'number').map((p) => p.sell_price as number), 0),
+    shinsegae: Math.max(...prices.filter((p) => p.gift_card_type === 'shinsegae' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name) && typeof p.sell_price === 'number').map((p) => p.sell_price as number), 0),
+    lotte: Math.max(...prices.filter((p) => p.gift_card_type === 'lotte' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name) && typeof p.sell_price === 'number').map((p) => p.sell_price as number), 0),
+    hyundai: Math.max(...prices.filter((p) => p.gift_card_type === 'hyundai' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name) && typeof p.sell_price === 'number').map((p) => p.sell_price as number), 0),
   }), [prices]);
 
   const bestPrices = view === 'buy' ? buyBestPrices : sellBestPrices;
@@ -94,7 +95,7 @@ export default function SecretPricePreviewClient({ initialView }: SecretPreviewC
     const siteComparableSumPrice: Record<string, number> = {};
 
     prices.forEach((p) => {
-      if (isExcludedCompareSite(p.site_name)) return;
+      if (isExcludedCompareSite(p.site_name) || isDreamVacationRankExcluded(p.site_name)) return;
       const metric = view === 'buy' ? p.buy_price : (p.sell_price ?? 0);
       siteComparableSumPrice[p.site_name] = (siteComparableSumPrice[p.site_name] || 0) + metric;
 
@@ -105,8 +106,8 @@ export default function SecretPricePreviewClient({ initialView }: SecretPreviewC
     });
 
     names.sort((a, b) => {
-      const excludedA = isExcludedCompareSite(a);
-      const excludedB = isExcludedCompareSite(b);
+      const excludedA = isExcludedCompareSite(a) || isDreamVacationRankExcluded(a);
+      const excludedB = isExcludedCompareSite(b) || isDreamVacationRankExcluded(b);
       if (excludedA !== excludedB) return excludedA ? 1 : -1;
 
       const countA = siteBestCount[a] || 0;

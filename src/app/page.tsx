@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { isDreamVacationRankExcluded } from '@/lib/dream-vacation';
 
 interface PriceData {
   id: number;
@@ -79,15 +80,15 @@ export default function Home() {
   }, []);
 
   const bestPrices = useMemo(() => ({
-    shinsegae: Math.max(...prices.filter(p => p.gift_card_type === 'shinsegae' && !isExcludedCompareSite(p.site_name)).map(p => p.buy_price), 0),
-    lotte: Math.max(...prices.filter(p => p.gift_card_type === 'lotte' && !isExcludedCompareSite(p.site_name)).map(p => p.buy_price), 0),
-    hyundai: Math.max(...prices.filter(p => p.gift_card_type === 'hyundai' && !isExcludedCompareSite(p.site_name)).map(p => p.buy_price), 0),
+    shinsegae: Math.max(...prices.filter(p => p.gift_card_type === 'shinsegae' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name)).map(p => p.buy_price), 0),
+    lotte: Math.max(...prices.filter(p => p.gift_card_type === 'lotte' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name)).map(p => p.buy_price), 0),
+    hyundai: Math.max(...prices.filter(p => p.gift_card_type === 'hyundai' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name)).map(p => p.buy_price), 0),
   }), [prices]);
 
   const sellBestPrices = useMemo(() => ({
-    shinsegae: Math.max(...prices.filter(p => p.gift_card_type === 'shinsegae' && !isExcludedCompareSite(p.site_name) && typeof p.sell_price === 'number').map(p => p.sell_price as number), 0),
-    lotte: Math.max(...prices.filter(p => p.gift_card_type === 'lotte' && !isExcludedCompareSite(p.site_name) && typeof p.sell_price === 'number').map(p => p.sell_price as number), 0),
-    hyundai: Math.max(...prices.filter(p => p.gift_card_type === 'hyundai' && !isExcludedCompareSite(p.site_name) && typeof p.sell_price === 'number').map(p => p.sell_price as number), 0),
+    shinsegae: Math.max(...prices.filter(p => p.gift_card_type === 'shinsegae' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name) && typeof p.sell_price === 'number').map(p => p.sell_price as number), 0),
+    lotte: Math.max(...prices.filter(p => p.gift_card_type === 'lotte' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name) && typeof p.sell_price === 'number').map(p => p.sell_price as number), 0),
+    hyundai: Math.max(...prices.filter(p => p.gift_card_type === 'hyundai' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name) && typeof p.sell_price === 'number').map(p => p.sell_price as number), 0),
   }), [prices]);
 
   const activeBestPrices = view === 'buy' ? bestPrices : sellBestPrices;
@@ -100,7 +101,7 @@ export default function Home() {
   const siteComparableSumPrice: Record<string, number> = {};
 
   prices.forEach(p => {
-    if (isExcludedCompareSite(p.site_name)) return;
+    if (isExcludedCompareSite(p.site_name) || isDreamVacationRankExcluded(p.site_name)) return;
 
     const metric = view === 'buy' ? p.buy_price : (p.sell_price ?? 0);
     if (metric <= 0) return;
@@ -116,8 +117,8 @@ export default function Home() {
 
   // 사이트 목록 정렬 (비교 대상 우선 -> 베스트 가격 보유 개수 -> 3종류 총합 -> 이름 가나다순)
   siteNames.sort((a, b) => {
-    const isExcludedA = isExcludedCompareSite(a);
-    const isExcludedB = isExcludedCompareSite(b);
+    const isExcludedA = isExcludedCompareSite(a) || isDreamVacationRankExcluded(a);
+    const isExcludedB = isExcludedCompareSite(b) || isDreamVacationRankExcluded(b);
     if (isExcludedA !== isExcludedB) return isExcludedA ? 1 : -1;
 
     // 1순위: 최고가 보유 개수
@@ -143,6 +144,8 @@ export default function Home() {
     siteNames.push('베스트상품권');
   }
 
+  const comparisonSiteCount = siteNames.filter((site) => site !== '베스트상품권' && !isExcludedCompareSite(site) && !isDreamVacationRankExcluded(site)).length;
+
   if (loading) {
     return <div className="container" style={{ textAlign: 'center', paddingTop: '100px' }}>Loading...</div>;
   }
@@ -160,7 +163,7 @@ export default function Home() {
     <div className="container">
       <section className="best-cards">
         {(Object.keys(GIFT_CARD_NAMES) as Array<keyof typeof GIFT_CARD_NAMES>).map(type => {
-          const typePrices = prices.filter(p => p.gift_card_type === type && !isExcludedCompareSite(p.site_name));
+          const typePrices = prices.filter(p => p.gift_card_type === type && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name));
           if (typePrices.length === 0) return null;
           
           const activeBest = typePrices.reduce((prev, curr) => {
@@ -213,6 +216,9 @@ export default function Home() {
 
       <div style={{ fontSize: '0.68rem', color: '#ef4444', fontWeight: 600, lineHeight: 1.45, textAlign: 'left', marginBottom: '0.45rem' }}>
         * 주의 * 상품권 특성상 실시간으로 시세가 변동될 수 있으며, 가격을 가져오는 과정에서 오류가 발생할 수 있으니 방문 직전 반드시 각 사이트에서 최종적으로 다시 확인하시기 바랍니다. 문제 발생 시 상품권 업체와 SangTech는 책임지지 않으며, 전적으로 판매 당사자의 책임입니다.
+      </div>
+      <div style={{ fontSize: '0.68rem', color: '#cbd5e1', fontWeight: 600, lineHeight: 1.45, textAlign: 'left', marginBottom: '0.35rem' }}>
+        현재 {comparisonSiteCount}개 업체 비교 중
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.85rem', flexWrap: 'nowrap', marginBottom: '0.3rem' }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.75rem', flex: '0 0 auto', borderBottom: '1px solid var(--border-color)', paddingBottom: '0.1rem' }}>

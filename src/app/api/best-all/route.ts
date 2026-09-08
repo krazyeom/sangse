@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import db, { hasSupabaseConfig } from '@/lib/db';
+import { isDreamVacationRankExcluded } from '@/lib/dream-vacation';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,12 +24,13 @@ export async function GET() {
       return NextResponse.json({ success: true, data: {} });
     }
 
+    const visiblePrices = prices.filter((p) => !isDreamVacationRankExcluded(p.site_name));
     const types = ['shinsegae', 'lotte', 'hyundai'];
     
     // 1. Find absolute maximum prices for each type
     const absoluteMaxPrices: Record<string, number> = {};
     for (const type of types) {
-      const typePrices = prices.filter(p => p.gift_card_type === type);
+      const typePrices = visiblePrices.filter(p => p.gift_card_type === type);
       if (typePrices.length > 0) {
         absoluteMaxPrices[type] = Math.max(...typePrices.map(p => p.buy_price));
       }
@@ -36,7 +38,7 @@ export async function GET() {
 
     // 2. Count how many times each site has an absolute max price
     const siteBestCount: Record<string, number> = {};
-    prices.forEach(p => {
+    visiblePrices.forEach(p => {
       const type = p.gift_card_type;
       if (p.buy_price === absoluteMaxPrices[type]) {
         siteBestCount[p.site_name] = (siteBestCount[p.site_name] || 0) + 1;
@@ -46,7 +48,7 @@ export async function GET() {
     const bestPrices: Record<string, any> = {};
 
     for (const type of types) {
-      const typePrices = prices.filter(p => p.gift_card_type === type);
+      const typePrices = visiblePrices.filter(p => p.gift_card_type === type);
       if (typePrices.length > 0) {
         // Sort descending by buy_price, then descending by siteBestCount
         typePrices.sort((a, b) => {

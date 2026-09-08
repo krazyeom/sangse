@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import WheelPicker from '@/components/WheelPicker';
 import '../calculator/calculator.css';
+import { isDreamVacationRankExcluded } from '@/lib/dream-vacation';
 
 interface PriceData {
   id: number;
@@ -65,15 +66,15 @@ export default function Calculator() {
 
   // 정렬 로직 (page.tsx와 동일)
   const bestPrices = {
-    shinsegae: Math.max(...prices.filter(p => p.gift_card_type === 'shinsegae').map(p => p.buy_price), 0),
-    lotte: Math.max(...prices.filter(p => p.gift_card_type === 'lotte').map(p => p.buy_price), 0),
-    hyundai: Math.max(...prices.filter(p => p.gift_card_type === 'hyundai').map(p => p.buy_price), 0),
+    shinsegae: Math.max(...prices.filter(p => p.gift_card_type === 'shinsegae' && !isDreamVacationRankExcluded(p.site_name)).map(p => p.buy_price), 0),
+    lotte: Math.max(...prices.filter(p => p.gift_card_type === 'lotte' && !isDreamVacationRankExcluded(p.site_name)).map(p => p.buy_price), 0),
+    hyundai: Math.max(...prices.filter(p => p.gift_card_type === 'hyundai' && !isDreamVacationRankExcluded(p.site_name)).map(p => p.buy_price), 0),
   };
 
   const recommendedBestPrices = {
-    shinsegae: Math.max(...prices.filter(p => p.gift_card_type === 'shinsegae' && !isExcludedCompareSite(p.site_name)).map(p => p.buy_price), 0),
-    lotte: Math.max(...prices.filter(p => p.gift_card_type === 'lotte' && !isExcludedCompareSite(p.site_name)).map(p => p.buy_price), 0),
-    hyundai: Math.max(...prices.filter(p => p.gift_card_type === 'hyundai' && !isExcludedCompareSite(p.site_name)).map(p => p.buy_price), 0),
+    shinsegae: Math.max(...prices.filter(p => p.gift_card_type === 'shinsegae' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name)).map(p => p.buy_price), 0),
+    lotte: Math.max(...prices.filter(p => p.gift_card_type === 'lotte' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name)).map(p => p.buy_price), 0),
+    hyundai: Math.max(...prices.filter(p => p.gift_card_type === 'hyundai' && !isExcludedCompareSite(p.site_name) && !isDreamVacationRankExcluded(p.site_name)).map(p => p.buy_price), 0),
   };
 
   let siteNames = Array.from(new Set(prices.map(p => p.site_name)));
@@ -82,7 +83,7 @@ export default function Calculator() {
 
   prices.forEach(p => {
     siteSumPrice[p.site_name] = (siteSumPrice[p.site_name] || 0) + p.buy_price;
-    if (isExcludedCompareSite(p.site_name)) return;
+    if (isExcludedCompareSite(p.site_name) || isDreamVacationRankExcluded(p.site_name)) return;
     const type = p.gift_card_type as keyof typeof bestPrices;
     if (p.buy_price === bestPrices[type] || p.buy_price === recommendedBestPrices[type]) {
       siteBestCount[p.site_name] = (siteBestCount[p.site_name] || 0) + 1;
@@ -90,8 +91,8 @@ export default function Calculator() {
   });
 
   siteNames.sort((a, b) => {
-    const excludedA = isExcludedCompareSite(a);
-    const excludedB = isExcludedCompareSite(b);
+    const excludedA = isExcludedCompareSite(a) || isDreamVacationRankExcluded(a);
+    const excludedB = isExcludedCompareSite(b) || isDreamVacationRankExcluded(b);
     if (excludedA !== excludedB) return excludedA ? 1 : -1;
 
     const countA = siteBestCount[a] || 0;
