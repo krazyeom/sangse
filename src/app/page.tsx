@@ -93,7 +93,7 @@ export default function Home() {
   const activeBestPrices = view === 'buy' ? bestPrices : sellBestPrices;
 
   // 렌더링용 사이트 목록 추출
-  let siteNames = Array.from(new Set(prices.map(p => p.site_name))).filter((site) => !isExcludedCompareSite(site));
+  let siteNames = Array.from(new Set(prices.map(p => p.site_name)));
 
   // 각 사이트별로 전체 상품권 중 베스트 가격을 몇 개나 가지고 있는지 카운트, 그리고 3종류 총합 계산
   const siteBestCount: Record<string, number> = {};

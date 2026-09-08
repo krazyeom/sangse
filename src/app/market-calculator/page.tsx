@@ -76,7 +76,7 @@ export default function Calculator() {
     hyundai: Math.max(...prices.filter(p => p.gift_card_type === 'hyundai' && !isExcludedCompareSite(p.site_name)).map(p => p.buy_price), 0),
   };
 
-  let siteNames = Array.from(new Set(prices.map(p => p.site_name))).filter((site) => !isExcludedCompareSite(site));
+  let siteNames = Array.from(new Set(prices.map(p => p.site_name)));
   const siteBestCount: Record<string, number> = {};
   const siteSumPrice: Record<string, number> = {};
 
@@ -90,6 +90,10 @@ export default function Calculator() {
   });
 
   siteNames.sort((a, b) => {
+    const excludedA = isExcludedCompareSite(a);
+    const excludedB = isExcludedCompareSite(b);
+    if (excludedA !== excludedB) return excludedA ? 1 : -1;
+
     const countA = siteBestCount[a] || 0;
     const countB = siteBestCount[b] || 0;
     if (countB !== countA) return countB - countA;
