@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import WheelPicker from '@/components/WheelPicker';
 import '../calculator/calculator.css';
 import { isDreamVacationRankExcluded } from '@/lib/dream-vacation';
+import { getSiteBaseName, getSiteRegion, hasSiteRegion } from '@/lib/site-order';
 
 interface PriceData {
   id: number;
@@ -94,6 +95,21 @@ export default function Calculator() {
     const excludedA = isExcludedCompareSite(a) || isDreamVacationRankExcluded(a);
     const excludedB = isExcludedCompareSite(b) || isDreamVacationRankExcluded(b);
     if (excludedA !== excludedB) return excludedA ? 1 : -1;
+
+    const regionA = getSiteRegion(a);
+    const regionB = getSiteRegion(b);
+    const hasRegionA = hasSiteRegion(a);
+    const hasRegionB = hasSiteRegion(b);
+    if (hasRegionA !== hasRegionB) return hasRegionA ? 1 : -1;
+    if (regionA !== regionB) {
+      if (!regionA) return -1;
+      if (!regionB) return 1;
+      return regionA.localeCompare(regionB, 'ko-KR');
+    }
+
+    const baseA = getSiteBaseName(a);
+    const baseB = getSiteBaseName(b);
+    if (baseA !== baseB) return baseA.localeCompare(baseB, 'ko-KR');
 
     const countA = siteBestCount[a] || 0;
     const countB = siteBestCount[b] || 0;

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { isDreamVacationRankExcluded } from '@/lib/dream-vacation';
+import { getSiteBaseName, getSiteRegion, hasSiteRegion } from '@/lib/site-order';
 
 interface PriceData {
   id: number;
@@ -115,11 +116,26 @@ export default function Home() {
     }
   });
 
-  // 사이트 목록 정렬 (비교 대상 우선 -> 베스트 가격 보유 개수 -> 3종류 총합 -> 이름 가나다순)
+  // 사이트 목록 정렬 (비교 대상 우선 -> 괄호 없는 업체 먼저 -> 괄호 있는 업체는 지역별 -> 베스트 가격 보유 개수 -> 3종류 총합 -> 이름 가나다순)
   siteNames.sort((a, b) => {
-    const isExcludedA = isExcludedCompareSite(a) || isDreamVacationRankExcluded(a);
-    const isExcludedB = isExcludedCompareSite(b) || isDreamVacationRankExcluded(b);
-    if (isExcludedA !== isExcludedB) return isExcludedA ? 1 : -1;
+    const excludedA = isExcludedCompareSite(a) || isDreamVacationRankExcluded(a);
+    const excludedB = isExcludedCompareSite(b) || isDreamVacationRankExcluded(b);
+    if (excludedA !== excludedB) return excludedA ? 1 : -1;
+
+    const regionA = getSiteRegion(a);
+    const regionB = getSiteRegion(b);
+    const hasRegionA = hasSiteRegion(a);
+    const hasRegionB = hasSiteRegion(b);
+    if (hasRegionA !== hasRegionB) return hasRegionA ? 1 : -1;
+    if (regionA !== regionB) {
+      if (!regionA) return -1;
+      if (!regionB) return 1;
+      return regionA.localeCompare(regionB, 'ko-KR');
+    }
+
+    const baseA = getSiteBaseName(a);
+    const baseB = getSiteBaseName(b);
+    if (baseA !== baseB) return baseA.localeCompare(baseB, 'ko-KR');
 
     // 1순위: 최고가 보유 개수
     const countA = siteBestCount[a] || 0;
