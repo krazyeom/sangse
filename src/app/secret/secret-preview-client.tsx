@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { isDreamVacationRankExcluded } from '@/lib/dream-vacation';
-import { getSiteBaseName, getSiteRegion, hasSiteRegion } from '@/lib/site-order';
+import { getSiteRegion, hasSiteRegion } from '@/lib/site-order';
 
 interface PriceData {
   id: number;
@@ -116,15 +116,9 @@ export default function SecretPricePreviewClient({ initialView }: SecretPreviewC
       const hasRegionA = hasSiteRegion(a);
       const hasRegionB = hasSiteRegion(b);
       if (hasRegionA !== hasRegionB) return hasRegionA ? 1 : -1;
-      if (regionA !== regionB) {
-        if (!regionA) return -1;
-        if (!regionB) return 1;
-        return regionA.localeCompare(regionB, 'ko-KR');
+      if (hasRegionA && hasRegionB && regionA !== regionB) {
+        return regionA!.localeCompare(regionB!, 'ko-KR');
       }
-
-      const baseA = getSiteBaseName(a);
-      const baseB = getSiteBaseName(b);
-      if (baseA !== baseB) return baseA.localeCompare(baseB, 'ko-KR');
 
       const countA = siteBestCount[a] || 0;
       const countB = siteBestCount[b] || 0;
